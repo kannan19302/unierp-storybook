@@ -8,7 +8,7 @@ Depends on: the design system.
 
 ## What this is
 
-The Storybook workshop for `@unerp/ui`.
+The Storybook workshop for `@kannan19302/ui`.
 
 ## The invariant this repository owns
 
