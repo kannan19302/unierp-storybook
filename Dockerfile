@@ -4,8 +4,8 @@
 # 1. Builder: Builds Storybook static bundle on port 6006
 # 2. Runner: Lightweight Nginx Alpine serves static Storybook files on port 6006
 
-# ── Stage 1: Build Storybook ──────────────────────────────────────────────
-FROM node:22-slim AS builder
+# ── Stage 1: Base Storybook ───────────────────────────────────────────────
+FROM node:22-slim AS base
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
@@ -16,6 +16,17 @@ RUN printf '@kannan19302:registry=%s\nregistry=https://registry.npmjs.org/\n' "$
  && npm install --no-audit --no-fund
 
 COPY . .
+
+# ── Stage: Dev Storybook ──────────────────────────────────────────────────
+FROM base AS dev
+ENV NODE_ENV=development
+EXPOSE 6006
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:6006/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["npx", "storybook", "dev", "-p", "6006", "--host", "0.0.0.0", "--no-open", "--ci"]
+
+# ── Stage: Builder ────────────────────────────────────────────────────────
+FROM base AS builder
 RUN npm run build-storybook
 
 # ── Stage 2: Serve with Nginx ─────────────────────────────────────────────
