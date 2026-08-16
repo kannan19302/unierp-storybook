@@ -1,11 +1,8 @@
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { readFile } from 'fs/promises';
+import { readFileSync } from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const STORIES_ROOT = path.join(__dirname, '..', '..', '..', 'unierp-design-system', 'src');
+const STORIES_ROOT = path.resolve(process.cwd(), '../design-system/src');
 
 export interface StoryInfo {
   id: string;
@@ -14,22 +11,22 @@ export interface StoryInfo {
   component: string;
 }
 
-export async function discoverStories(): Promise<StoryInfo[]> {
+export function discoverStories(): StoryInfo[] {
   console.log(`Looking for stories in: ${STORIES_ROOT}`);
-  const storyFiles = await glob('**/*.stories.@(ts|tsx)', { cwd: STORIES_ROOT, absolute: true });
+  const storyFiles = globSync('**/*.stories.@(ts|tsx)', { cwd: STORIES_ROOT, absolute: true });
   console.log(`Found ${storyFiles.length} story files`);
   
   const stories: StoryInfo[] = [];
   
   for (const filePath of storyFiles) {
-    const content = await readFile(filePath, 'utf-8');
+    const content = readFileSync(filePath, 'utf-8');
     const relativePath = path.relative(STORIES_ROOT, filePath);
     
     // Parse story exports to get story IDs and titles
     const exportMatches = content.matchAll(/export\s+(?:const|var|let)\s+(\w+)\s*=/g);
-    const defaultExportMatch = content.match(/export\s+default\s+\{\s*title:\s*['"]([^'"]+)['"]/);
+    const titleMatch = content.match(/title:\s*['"]([^'"]+)['"]/);
     
-    const title = defaultExportMatch?.[1] || path.basename(filePath, '.stories.tsx');
+    const title = titleMatch?.[1] || path.basename(filePath, '.stories.tsx');
     const component = path.dirname(relativePath).split(path.sep).pop() || 'unknown';
     
     // Find named exports (individual stories)
@@ -66,6 +63,7 @@ export const DENSITIES = ['comfortable', 'compact'];
 export const MODES = ['light', 'dark'];
 
 export function generateStoryUrl(storyId: string, theme: string, density: string, mode: string): string {
-  const encodedId = encodeURIComponent(storyId);
-  return `/?path=/${encodedId}&globals=theme:${theme},density:${density},mode:${mode}`;
+  // Convert "Components/Badge--Default" to "components-badge--default"
+  const formattedId = storyId.toLowerCase().replace(/[^a-z0-9\-]+/g, '-');
+  return `/iframe.html?id=${formattedId}&viewMode=story&globals=theme:${theme},density:${density},mode:${mode}`;
 }

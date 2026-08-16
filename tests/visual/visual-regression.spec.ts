@@ -1,18 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { discoverStories, THEMES, DENSITIES, MODES, generateStoryUrl } from './discover-stories';
 
-const BASELINE_DIR = '../../scripts/ci/visual-baselines';
-
 test.describe.configure({ retries: 0 });
 
+const stories = discoverStories();
+console.log(`Discovered ${stories.length} stories for visual regression testing`);
+
 test.describe('Visual Regression', () => {
-  let stories: Awaited<ReturnType<typeof discoverStories>>;
-
-  test.beforeAll(async () => {
-    stories = await discoverStories();
-    console.log(`Discovered ${stories.length} stories for visual regression testing`);
-  });
-
   for (const story of stories) {
     for (const theme of THEMES) {
       for (const density of DENSITIES) {
@@ -25,7 +19,7 @@ test.describe('Visual Regression', () => {
             await page.waitForLoadState('networkidle');
             
             // Wait for the story to render
-            await page.waitForSelector('#storybook-root', { timeout: 10000 });
+            await page.waitForSelector('#storybook-root > *', { state: 'attached', timeout: 10000 });
             
             // Take screenshot
             const screenshot = await page.screenshot({

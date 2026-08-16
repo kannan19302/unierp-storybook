@@ -3,7 +3,7 @@ import path from 'path';
 
 const config: StorybookConfig = {
   stories: [
-    '../unierp-design-system/src/**/*.stories.@(ts|tsx)',
+    '../../design-system/src/**/*.stories.@(ts|tsx)',
   ],
   addons: ['@storybook/addon-essentials', '@storybook/addon-links', '@storybook/addon-a11y'],
   framework: {
@@ -27,8 +27,18 @@ const config: StorybookConfig = {
         ...config.resolve,
         alias: {
           ...config.resolve?.alias,
-          '@kannan19302/ui': path.resolve(__dirname, '../unierp-design-system/src'),
+          '@kannan19302/ui': path.resolve(__dirname, '../../design-system/src'),
+          'lucide-react': path.resolve(__dirname, '../node_modules/lucide-react'),
+          '@radix-ui/react-slot': path.resolve(__dirname, '../node_modules/@radix-ui/react-slot'),
         },
+      },
+      optimizeDeps: {
+        ...config.optimizeDeps,
+        include: [
+          ...(config.optimizeDeps?.include || []),
+          'lucide-react',
+          '@radix-ui/react-slot',
+        ],
       },
     };
   },

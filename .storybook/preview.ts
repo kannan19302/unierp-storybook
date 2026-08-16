@@ -1,6 +1,6 @@
 import type { Preview } from "@storybook/react";
 import "@kannan19302/ui/tokens/index.css";
-import "@kannan19302/ui/styles";
+import "@kannan19302/ui/styles/globals.css";
 
 const THEMES = [
   "light",
