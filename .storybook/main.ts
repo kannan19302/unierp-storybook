@@ -40,6 +40,20 @@ const config: StorybookConfig = {
           '@radix-ui/react-slot',
         ],
       },
+      // The stories and components live OUTSIDE this Vite project root
+      // (../../design-system/src, i.e. /design-system in the container while the
+      // root is /app). @vitejs/plugin-react only applies its JSX transform to
+      // files under the root, so every component here was served with raw JSX
+      // and the classic runtime's implicit `React` reference — which nothing
+      // imports, because the codebase is written for the automatic runtime.
+      // Every story rendered as "React is not defined".
+      //
+      // Setting the transform on esbuild covers files wherever they live.
+      esbuild: {
+        ...config.esbuild,
+        jsx: 'automatic',
+        jsxImportSource: 'react',
+      },
     };
   },
 };
